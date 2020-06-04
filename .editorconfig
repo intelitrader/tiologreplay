@@ -1,0 +1,7 @@
+﻿[*.{cs,vb}]
+
+# IDE0060: Remove unused parameter
+dotnet_code_quality_unused_parameters = all:silent
+
+# IDE0003: Remove qualification
+dotnet_style_qualification_for_method = false:silent
