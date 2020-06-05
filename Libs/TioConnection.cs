@@ -20,18 +20,38 @@ namespace tioLogReplay
             this.network = client.GetStream();
         }
 
-        public void Create(string name)
+        public void Create(string name, string type)
         {
             try
             {
                 // Sends a command to the server 
-                var data = Encoding.ASCII.GetBytes($"create {name}");
+                var data = Encoding.ASCII.GetBytes($"create {name} {type}");
                 network.Write(data, 0, data.Length);
                 
                 // Gets response from server
                 var bytes = network.Read(data, 0, data.Length);
                 var responseData = Encoding.ASCII.GetString(data, 0, bytes);
-s
+
+                Console.WriteLine("Answer: {0}", responseData);
+            }
+            catch (SocketException e)
+            {
+                Console.WriteLine("SocketExcepetion: {0}", e);
+            }
+        }
+
+        public void Open(string name, string type)
+        {
+            try
+            {
+                // Sends a command to the server 
+                var data = Encoding.ASCII.GetBytes($"create {name} {type}");
+                network.Write(data, 0, data.Length);
+                
+                // Gets response from server
+                var bytes = network.Read(data, 0, data.Length);
+                var responseData = Encoding.ASCII.GetString(data, 0, bytes);
+
                 Console.WriteLine("Answer: {0}", responseData);
             }
             catch (SocketException e)
@@ -58,7 +78,6 @@ s
             {
                 Console.WriteLine("SocketExcepetion: {0}", e);
             }
-
         }
 
         public void PushBack(string line)
@@ -99,18 +118,17 @@ s
             {
                 Console.WriteLine("SocketExcepetion: {0}", e);
             }
-
         }
 
         public void Insert(string line)
         {
             try
             {
-                // Sends a command to the server 
+                // Sends a command
                 var data = Encoding.ASCII.GetBytes(line);
                 network.Write(data, 0, data.Length);
                 
-                // Gets response from server
+                // Gets response 
                 var bytes = network.Read(data, 0, data.Length);
                 var responseData = Encoding.ASCII.GetString(data, 0, bytes);
 
@@ -131,26 +149,6 @@ s
         public void ResumeServer()
         {
             //TODO
-        }
-
-        public void SendCommand(string line, string server = TIO_DEFAULT_SERVER, int port = TIO_DEFAULT_PORT)
-        {
-            try
-            {
-                // Sends a command to the server 
-                var data = Encoding.ASCII.GetBytes(line);
-                network.Write(data, 0, data.Length);
-                
-                // Gets response from server
-                var bytes = network.Read(data, 0, data.Length);
-                var responseData = Encoding.ASCII.GetString(data, 0, bytes);
-
-                Console.WriteLine("Answer: {0}", responseData);
-            }
-            catch (SocketException e)
-            {
-                Console.WriteLine("SocketExcepetion: {0}", e);
-            }
         }
     }
 }

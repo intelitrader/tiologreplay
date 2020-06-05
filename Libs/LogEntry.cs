@@ -16,8 +16,9 @@ namespace tioLogReplay.Libs
         public string Handle { get; set; }
         public string Key { get; set; }
         public string Value { get; set; }
-        public string Metadata { get; set; }
+        public string Data { get; set; }
         public string CurrentField { get; set; }
+        public DateTime ParseTime { get; set; }
 
         public LogEntry(string entry)
         {
@@ -41,12 +42,18 @@ namespace tioLogReplay.Libs
             else
             {
                 // Sets values for the final command
-                this.Key = Deserialize(key_info, key); 
-                this.Value = Deserialize(value_info, value);
+                this.Key = Deserialize(key_info);
+                this.Value = Deserialize(value_info);
+ 
+                if(this.Key != null)
+                    this.Data += $"\r\n{key}"; 
+                if(this.Value != null)
+                    this.Data += $"\r\n{value}";
             }
+            // this.ParseTime = 
         }
 
-        private string Deserialize(string info, string data)
+        private string Deserialize(string info)
         {
             var type = info[0]; // Takes type out info (format: "s12"; 's' for string. 'n' is null)
            
@@ -60,34 +67,26 @@ namespace tioLogReplay.Libs
             string field = GetField();
 
             if (type == 's')
-                return ($"{field} string {size} {data}");
+                return ($"{field} string {size}");
             if (type == 'i')
-                return ($"{field} int {size} {data}");
+                return ($"{field} int {size}");
             if (type == 'd')
-                return ($"{field} double {size} {data}");
+                return ($"{field} double {size}");
 
             return null;
         }
         
         private string GetField()
         {
-            switch (this.CurrentField)
-            {
-                case "key":
-                    CurrentField = "value";
-                    return "value";
-                case "value":
-                    CurrentField = 'metadata';
-                    return "metadata";
-                default:
-                    CurrentField = "key";
-                    return "key";
-            }
+            return CurrentField == null ? "key" : "value";    
         }
 
         public override string ToString()
         {
-            return Command + ' ' + (Key != null ? Key + ' ' + Value : Value);
+            if (Key != null)
+                return Command + ' ' + Key + ' ' + Value + Data;
+
+            return Command + ' ' + Value + Data;
         }
     }
 }
