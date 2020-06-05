@@ -9,7 +9,7 @@ namespace tioLogReplay
     public class TioConnection : Options
     {
         const string TIO_DEFAULT_SERVER = "localhost";
-        const int TIO_DEFAULT_PORT = 6025;
+        const int TIO_DEFAULT_PORT = 2605;
 
         private TcpClient client { get; set; }
         private NetworkStream network { get; set; }
