@@ -14,20 +14,20 @@ namespace tioLogReplay
     {
         static void Main(string[] args)
         {
-            string PATH = @"C:\Users\danil\Desktop\tiodb\build\server\tio\Debug\logs\_20200527";
+            const string path = @"C:\Users\danil\Desktop\tiodb\build\server\tio\Debug\logs\_20200527";
 
-            if (!File.Exists(PATH))
+            if (!File.Exists(path))
                 throw new FileNotFoundException("Log not found");
 
             var options = new Options();
 
-            options.Path = PATH; // Sets PATH as const for debbuging purposes
+            options.Path = path; // Sets PATH as const for debbuging purposes
 
-                new TioLogParser(options.Path,
-                    options.Speed,
-                    options.Delay,
-                    options.Follow,
-                    options.Pause);
+            var tioLogParser = new TioLogParser(options.Path,
+                options.Speed,
+                options.Delay,
+                options.Follow,
+                options.Pause);
         }
     }
 }

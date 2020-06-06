@@ -10,7 +10,6 @@ namespace tioLogReplay.Libs
 {
     public class LogEntry
     {
-        public string Entry { get; set; }
         public string Time { get; set; }
         public string Command { get; set; }
         public string Handle { get; set; }
@@ -25,14 +24,14 @@ namespace tioLogReplay.Libs
             if (entry.EndsWith("\\n"))
                 throw new NotImplementedException();
 
-            string key_info;
-            string value_info;
+            string keyInfo;
+            string valueInfo;
             string key;
             string value;
 
             // Sets some values to their respective properties // Returns key's value info.
             // Tuple implementaion may slow tiologreplay, added for readability
-            (this.Time, this.Command, this.Handle, key_info, key, value_info, value, _) = entry.Split(',', 7);
+            (this.Time, this.Command, this.Handle, keyInfo, key, valueInfo, value, _) = entry.Split(',', 7);
 
             if(Command == "create" || Command == "open")
             {
@@ -42,45 +41,52 @@ namespace tioLogReplay.Libs
             else
             {
                 // Sets values for the final command
-                this.Key = Deserialize(key_info);
-                this.Value = Deserialize(value_info);
+                this.Key = Deserialize(keyInfo);
+                this.Value = Deserialize(valueInfo);
  
-                if(this.Key != null)
+                if (this.Key != null)
                     this.Data += $"\r\n{key}"; 
-                if(this.Value != null)
+                if (this.Value != null)
                     this.Data += $"\r\n{value}";
             }
-            // this.ParseTime = 
         }
 
         private string Deserialize(string info)
         {
             var type = info[0]; // Takes type out info (format: "s12"; 's' for string. 'n' is null)
            
-            if(type == 'n')
+            if (type == 'n')
                 return null;
 
             var sizeL = info.Skip(1); // Gets only type's numbers
 
-            int size = int.Parse(string.Join("", sizeL)); // Turns stringfied numbers into actual numbers
+            var size = int.Parse(string.Join("", sizeL)); // Turns stringfied numbers into actual numbers
 
-            string field = GetField();
+            var field = GetField();
 
-            if (type == 's')
-                return ($"{field} string {size}");
-            if (type == 'i')
-                return ($"{field} int {size}");
-            if (type == 'd')
-                return ($"{field} double {size}");
-
-            return null;
+            return type switch
+            {
+                's' => ($"{field} string {size}"),
+                'i' => ($"{field} int {size}"),
+                'd' => ($"{field} double {size}"),
+                _ => null
+            };
         }
         
         private string GetField()
         {
-            return CurrentField == null ? "key" : "value";    
+            if (CurrentField == null)
+            {
+                CurrentField = "key";
+                return "key";
+            }
+            else
+            {
+                CurrentField = "value";
+                return "value";
+            }
         }
-
+        
         public override string ToString()
         {
             if (Key != null)

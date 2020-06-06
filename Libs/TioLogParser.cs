@@ -1,27 +1,39 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 
 namespace tioLogReplay.Libs
 {
-    class TioLogParser
+    public class TioLogParser
     {
+        private TioConnection tio { get; set; }
+        private StreamReader file { get; set; }
+        private FileSystemWatcher watch { get; set; }
+        
         public TioLogParser(string path, int speed, int delay, bool follow, bool pause)
         {
             string entry;
-            StreamReader file = new StreamReader(path);
-            TioConnection tio = new TioConnection();
-
+            file = new StreamReader(path);
+            tio = new TioConnection();
+            watch = new FileSystemWatcher();
+            watch.Path = "";
+            watch.Filter = "FILENAME";
+            watch.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite;
+            watch.EnableRaisingEvents = true;
+            watch.Changed += new FileSystemEventHandler((source, e) =>
+                {
+                    file.ReadToEndAsync();
+                }
+            );
+            
             while ((entry = file.ReadLine()) != null)
             {
                 var log = new LogEntry(entry);
-                
-                // This switch could be replaced for a generic method that is able to send any command
-                // Again, made for readability
-                
+                // Following switch could be replaced for a generic method that is able to send any command
                 switch (log.Command)
                 {
                     case "create":
