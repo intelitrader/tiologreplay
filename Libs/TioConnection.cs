@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace tioLogReplay
 {
@@ -11,144 +13,41 @@ namespace tioLogReplay
         const string TIO_DEFAULT_SERVER = "localhost";
         const int TIO_DEFAULT_PORT = 2605;
 
-        private TcpClient Client { get; set; }
-        private NetworkStream Network { get; set; }
+        private TcpClient client { get; set; }
+        private NetworkStream stream { get; set; }
 
         public TioConnection(string server = TIO_DEFAULT_SERVER, int port = TIO_DEFAULT_PORT)
         {
-            this.Client = new TcpClient(server, port);
-            this.Network = Client.GetStream();
+            this.client = new TcpClient(server, port);
+            this.stream = client.GetStream();
         }
-        
-        public void Create(string name, string type)
-        {
-            try
-            {
-                // Sends a command to the server 
-                var data = Encoding.ASCII.GetBytes($"create {name} {type}");
-                Network.Write(data, 0, data.Length);
-                
-                // Gets response from server
-                var bytes = Network.Read(data, 0, data.Length);
-                var responseData = Encoding.ASCII.GetString(data, 0, bytes);
 
-                Console.WriteLine("Answer: {0}", responseData);
-            }
-            catch (SocketException e)
-            {
-                Console.WriteLine("SocketExcepetion: {0}", e);
-            }
-        }
-        
-        public void Open(string name, string type)
-        {
-            try
-            {
-                // Sends a command to the server 
-                var data = Encoding.ASCII.GetBytes($"create {name} {type}");
-                Network.Write(data, 0, data.Length);
-                
-                // Gets response from server
-                var bytes = Network.Read(data, 0, data.Length);
-                var responseData = Encoding.ASCII.GetString(data, 0, bytes);
-
-                Console.WriteLine("Answer: {0}", responseData);
-            }
-            catch (SocketException e)
-            {
-                Console.WriteLine("SocketExcepetion: {0}", e);
-            }
-        }
-        
-        public void PushFront(string line)
+        public void SendCommand(string line)
         {
             try
             {
                 // Sends a command to the server 
                 var data = Encoding.ASCII.GetBytes(line);
-                Network.Write(data, 0, data.Length);
-                
-                // Gets response from server
-                var bytes = Network.Read(data, 0, data.Length);
-                var responseData = Encoding.ASCII.GetString(data, 0, bytes);
+                stream.Write(data, 0, data.Length);
+                Console.WriteLine(line);
 
-                Console.WriteLine("Answer: {0}", responseData);
+                stream.Close();
+                client.Close();
             }
             catch (SocketException e)
             {
                 Console.WriteLine("SocketExcepetion: {0}", e);
             }
         }
-        
-        public void PushBack(string line)
-        {
-            try
-            {
-                // Sends a command to the server 
-                var data = Encoding.ASCII.GetBytes(line);
-                Network.Write(data, 0, data.Length);
-                
-                // Gets response from server
-                var bytes = Network.Read(data, 0, data.Length);
-                var responseData = Encoding.ASCII.GetString(data, 0, bytes);
-
-                Console.WriteLine("Answer: {0}", responseData);
-            }
-            catch (SocketException e)
-            {
-                Console.WriteLine("SocketExcepetion: {0}", e);
-            }
-        }
-        
-        public void Set(string line)
-        {
-            try
-            {
-                // Sends a command to the server 
-                var data = Encoding.ASCII.GetBytes(line);
-                Network.Write(data, 0, data.Length);
-                
-                // Gets response from server
-                var bytes = Network.Read(data, 0, data.Length);
-                var responseData = Encoding.ASCII.GetString(data, 0, bytes);
-
-                Console.WriteLine("Answer: {0}", responseData);
-            }
-            catch (SocketException e)
-            {
-                Console.WriteLine("SocketExcepetion: {0}", e);
-            }
-        }
-        
-        public void Insert(string line)
-        {
-            try
-            {
-                // Sends a command
-                var data = Encoding.ASCII.GetBytes(line);
-                Network.Write(data, 0, data.Length);
-                
-                // Gets response 
-                var bytes = Network.Read(data, 0, data.Length);
-                var responseData = Encoding.ASCII.GetString(data, 0, bytes);
-
-                Console.WriteLine("Answer: {0}", responseData);
-            }
-            catch (SocketException e)
-            {
-                Console.WriteLine("SocketExcepetion: {0}", e);
-            }
-
-        }
-
-        public void PauseServer()
-        {
-            //TODO
-        }
-
-        public void ResumeServer()
-        {
-            //TODO
+ 
+        public void Write(string line) {
+            // Sends a command to the server 
+            var data = Encoding.ASCII.GetBytes(line);
+            stream.Write(data, 0, data.Length);
+            Console.WriteLine("Sent {0}:", line);
+            client.Close();
+            stream.Close();
         }
     }
 }
+

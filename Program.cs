@@ -12,7 +12,7 @@ namespace tioLogReplay
 {
     class Program
     {
-        static void Main(string[] args)
+        static async void Main(string[] args)
         {
             const string path = @"C:\Users\danil\Desktop\tiodb\build\server\tio\Debug\logs\_20200527";
 
@@ -28,6 +28,14 @@ namespace tioLogReplay
                 options.Delay,
                 options.Follow,
                 options.Pause);
+
+            await tioLogParser.CloneLogAsync(); // Clones the existent log
+            
+            if (options.Delay == 0)
+               tioLogParser.WatchLogAsync();
+            else
+              tioLogParser.WatchLogAsyncWithDelay(options.Delay);
         }
+
     }
 }
