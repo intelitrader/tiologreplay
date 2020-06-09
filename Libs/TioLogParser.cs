@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -56,7 +57,7 @@ namespace tioLogReplay.Libs
             }
         }
 
-        public void WatchLogAsyncWithDelay(int delay) // still not async
+        public void WatchLogAsyncWithDelay(int delayInSeconds) // still not async
         {
             LogEntry log;
             string entry;
@@ -70,7 +71,7 @@ namespace tioLogReplay.Libs
                         
                         // these lines will be more useful when dealing with a big log queue 
                         TimeSpan timePassed = DateTime.Now - log.ParseTime;
-                        var wait = (delay * 1000) - (int) timePassed.TotalMilliseconds;
+                        var wait = (delayInSeconds * 1000) - (int) timePassed.TotalMilliseconds;
                         Thread.Sleep(wait);
                         Tio.SendCommand(log.ToString());
                     }
@@ -78,6 +79,7 @@ namespace tioLogReplay.Libs
                 else
                 {
                     Thread.Sleep(100); // waits 1/10 a second before trying to read of to end of stream again
+
                 }
             }
         }
@@ -86,7 +88,7 @@ namespace tioLogReplay.Libs
         {
             var tasks = new List<Task>();
             LogEntry log;
-            string entry;
+            string entry; 
 
             while ((entry = File.ReadLine()) != null)
             {
