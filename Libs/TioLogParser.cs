@@ -54,12 +54,11 @@ namespace tioLogReplay.Libs
 		           };
 		       )
                     }
-
 		    await Task.WhenAll(tasks); // don't know if it's the best way of doing it yet, needs debbuging
                 }
                 else
                 {
-                    Thread.Sleep(50); // waits 1/20 a second before trying to read of to end of stream again
+                    Thread.Sleep(50); // waits 1/20 a second before trying to read the end of the stream again
                 }
             }
         }
