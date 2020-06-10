@@ -15,7 +15,7 @@ namespace tioLogReplay.Libs
     {
         private TioConnection Tio { get; set; }
         private StreamReader File { get; set; }
-        private FileSystemWatcher watch { get; set; }
+     // private FileSystemWatcher watch { get; set; }
 
         public TioLogParser(string path, int speed, int delay, bool follow, bool pause)
         {
