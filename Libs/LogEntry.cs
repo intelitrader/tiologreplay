@@ -20,10 +20,10 @@ namespace tioLogReplay.Libs
 
         public LogEntry(string entry)
         {
-            if (entry.EndsWith("\\n"))
-		entry = entry.Take(entry.Count() - 1);
+            if (entry.EndsWith(",n,"))
+                entry = entry.Remove(entry.Length - 3);
 
-	    string time;
+	        string time;
             string keyInfo;
             string valueInfo;
             string key;
@@ -47,10 +47,13 @@ namespace tioLogReplay.Libs
                 if (this.Key != null)
                     this.Data += $"\r\n{key}";
                 if (this.Value != null)
-                    this.Data += $"\r\n{value}";
+                    this.Data += $"\n{value}";
             }
 
-	    this.Time = DateTime.Parse(time);
+            var a = new Options();
+
+            if (a.Delay > 0)
+                this.Time = DateTime.Parse(time.Substring(13));
         }
 
         private string Deserialize(string info)
@@ -58,7 +61,10 @@ namespace tioLogReplay.Libs
             var type = info[0]; // Takes type out info (format: "s12"; 's' for string. 'n' is null)
 
             if (type == 'n')
+            {
+                CurrentField = "key";
                 return null;
+            }
 
             var sizeL = info.Skip(1); // Gets only type's numbers
 
@@ -84,17 +90,23 @@ namespace tioLogReplay.Libs
             }
             else
             {
-                CurrentField = "value";
                 return "value";
             }
         }
 
-        public override string ToString()
+        public string ToFullCummand()
         {
-            if (Key != null)
-                return Command + ' ' + Key + ' ' + Value + Data;
+            string fullCommand;
 
-            return Command + ' ' + Value + Data;
+            if (Data == null)
+                return Command + ' ' +  Key + ' '  + Value + '\n';
+
+            if (Key != null)
+                fullCommand = Command + ' ' + Handle + ' ' + Key + ' ' + Value + Data;
+            else
+                fullCommand = Command + ' ' + Handle + ' ' + Value + Data;
+
+            return fullCommand + "\r\n" + '\n'; //adds a new line to the command 
         }
     }
 }

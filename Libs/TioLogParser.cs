@@ -15,12 +15,21 @@ namespace tioLogReplay.Libs
     {
         private TioConnection Tio { get; set; }
         private StreamReader File { get; set; }
-     // private FileSystemWatcher watch { get; set; }
+        public int Speed { get; }
+        public int Delay { get; }
+        public bool Follow { get; }
+        public bool Pause { get; }
+
+        // private FileSystemWatcher watch { get; set; }
 
         public TioLogParser(string path, int speed, int delay, bool follow, bool pause)
         {
             Tio = new TioConnection();
             File = new StreamReader(path);
+            Speed = speed;
+            Delay = delay;
+            Follow = follow;
+            Pause = pause;
 
             // Watches log updates and replays every change
 
@@ -36,9 +45,9 @@ namespace tioLogReplay.Libs
             //);
         }
 
-        public void WatchLogAsync() // Still not async
+        public void WatchLog()
         {
-	    List<Task> tasks = new List<Task>();
+            List<Task> tasks = new List<Task>();
             LogEntry log;
             string entry;
 
@@ -48,13 +57,9 @@ namespace tioLogReplay.Libs
                 {
                     while ((entry = File.ReadLine()) != null)
                     {
-		 	tasks.Add(Task.Run(() => {
- 	                       log = new LogEntry(entry);
-                               Tio.SendCommand(log.ToString());
-		           };
-		       )
+                        log = new LogEntry(entry);
+                        Tio.SendCommand(log.ToFullCummand());
                     }
-		    await Task.WhenAll(tasks); // don't know if it's the best way of doing it yet, needs debbuging
                 }
                 else
                 {
@@ -63,7 +68,7 @@ namespace tioLogReplay.Libs
             }
         }
 
-        public void WatchLogAsyncWithDelay(int delayInSeconds) // still not async
+        public void WatchLogWithDelay() // still not async
         {
             LogEntry log;
             string entry;
@@ -75,11 +80,12 @@ namespace tioLogReplay.Libs
                     {
                         log = new LogEntry(entry);
 
-                        // these lines will be more useful when dealing with a big log queue
                         TimeSpan timePassed = DateTime.Now - log.Time;
-                        var wait = (delayInSeconds * 1000) - (int) timePassed.TotalMilliseconds;
+                        var wait = (Delay * 1000) - (int)timePassed.TotalMilliseconds;
+
                         Thread.Sleep(wait);
-                        Tio.SendCommand(log.ToString());
+
+                        Tio.SendCommand(log.ToFullCummand());
                     }
                 }
                 else
@@ -89,7 +95,7 @@ namespace tioLogReplay.Libs
             }
         }
 
-        public async Task CloneLogAsync()
+        public void CloneLog()
         {
             var tasks = new List<Task>();
             LogEntry log;
@@ -97,11 +103,9 @@ namespace tioLogReplay.Libs
 
             while ((entry = File.ReadLine()) != null)
             {
-               log = new LogEntry(entry);
-               tasks.Add(Task.Run(() => Tio.SendCommand(log.ToString())));
+                log = new LogEntry(entry);
+                Tio.SendCommand(log.ToFullCummand());
             }
-
-            await Task.WhenAll(tasks);
         }
     }
 }

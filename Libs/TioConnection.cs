@@ -26,27 +26,19 @@ namespace tioLogReplay
         {
             try
             {
-                // Sends a command to the server 
                 var data = Encoding.ASCII.GetBytes(line);
                 stream.Write(data, 0, data.Length);
-                Console.WriteLine(line);
+                Console.WriteLine("Sent: {0}", line);
 
-                stream.Close();
-                client.Close();
+                byte[] bytes = new Byte[128];
+                var length = stream.Read(bytes, 0, bytes.Length);
+                var responseData =  Encoding.ASCII.GetString(bytes, 0, length);
+                Console.WriteLine("Answer: {0}", responseData);
             }
             catch (SocketException e)
             {
                 Console.WriteLine("SocketExcepetion: {0}", e);
             }
-        }
- 
-        public void Write(string line) {
-            // Sends a command to the server 
-            var data = Encoding.ASCII.GetBytes(line);
-            stream.Write(data, 0, data.Length);
-            Console.WriteLine("Sent {0}:", line);
-            client.Close();
-            stream.Close();
         }
     }
 }
