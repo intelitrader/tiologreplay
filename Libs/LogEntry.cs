@@ -23,7 +23,7 @@ namespace tioLogReplay.Libs
             if (entry.EndsWith(",n,"))
                 entry = entry.Remove(entry.Length - 3);
 
-	        string time;
+	    string time;
             string keyInfo;
             string valueInfo;
             string key;
@@ -45,7 +45,7 @@ namespace tioLogReplay.Libs
                 this.Value = Deserialize(valueInfo);
 
                 if (this.Key != null)
-                    this.Data += $"\r\n{key}";
+                    this.Data += $"\n{key}";
                 if (this.Value != null)
                     this.Data += $"\n{value}";
             }
@@ -106,7 +106,7 @@ namespace tioLogReplay.Libs
             else
                 fullCommand = Command + ' ' + Handle + ' ' + Value + Data;
 
-            return fullCommand + "\r\n" + '\n'; //adds a new line to the command 
+            return fullCommand + "\n" + '\n'; //adds a new line to the command 
         }
     }
 }
