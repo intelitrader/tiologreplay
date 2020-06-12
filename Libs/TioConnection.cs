@@ -34,6 +34,7 @@ namespace tioLogReplay
                 var length = stream.Read(bytes, 0, bytes.Length);
                 var responseData =  Encoding.ASCII.GetString(bytes, 0, length);
                 Console.WriteLine("Answer: {0}", responseData);
+                Console.WriteLine("==============================================================");
             }
             catch (SocketException e)
             {

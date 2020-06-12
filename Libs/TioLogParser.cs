@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -14,97 +16,102 @@ namespace tioLogReplay.Libs
     public class TioLogParser
     {
         private TioConnection Tio { get; set; }
-        private StreamReader File { get; set; }
+        private string Path { get; set; }
         public int Speed { get; }
         public int Delay { get; }
         public bool Follow { get; }
         public bool Pause { get; }
 
-        // private FileSystemWatcher watch { get; set; }
-
         public TioLogParser(string path, int speed, int delay, bool follow, bool pause)
         {
             Tio = new TioConnection();
-            File = new StreamReader(path);
+            Path = path;
             Speed = speed;
-            Delay = delay;
+            Delay = 60;
             Follow = follow;
             Pause = pause;
-
-            // Watches log updates and replays every change
-
-            //watch = new FileSystemWatcher();
-            //watch.Path = @"C:\Users\danil\Desktop\tiodb\build\server\tio\Debug\logs\";
-            //watch.Filter = "_20200527";
-            //watch.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite;
-            //watch.EnableRaisingEvents = true;
-            //watch.Changed += new FileSystemEventHandler((source, e) =>
-            //    {
-            //        // Read to end of stream and send command
-            //    }
-            //);
         }
 
-        public void WatchLog()
+        public void Clone()
         {
-            List<Task> tasks = new List<Task>();
-            LogEntry log;
             string entry;
-
-            while (true)
+            LogEntry log;
+            using (StreamReader reader = new StreamReader(new FileStream(Path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
             {
-                if (File.EndOfStream)
+                while ((entry = reader.ReadLine()) != null)
                 {
-                    while ((entry = File.ReadLine()) != null)
-                    {
-                        log = new LogEntry(entry);
-                        Tio.SendCommand(log.ToFullCummand());
-                    }
-                }
-                else
-                {
-                    Thread.Sleep(50); // waits 1/20 a second before trying to read the end of the stream again
+                    log = new LogEntry(entry);
+                    Tio.SendCommand(log.ToFullCommand());
                 }
             }
         }
 
-        public void WatchLogWithDelay() // still not async
+        public void Replay()
         {
-            LogEntry log;
-            string entry;
-            while (true)
+            using (StreamReader reader = new StreamReader(new FileStream(Path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
             {
-                if (File.EndOfStream)
+                LogEntry log;
+                string line;
+
+                //start at the end of the file
+                long lastMaxOffset = reader.BaseStream.Length;
+
+                Console.WriteLine("\nWaiting for file to grow...");
+
+                bool commandSent = false;
+
+                while (true)
                 {
-                    while ((entry = File.ReadLine()) != null)
+                    //if a command was not sent, don't print that the program is waiting 
+                    if (commandSent)
                     {
-                        log = new LogEntry(entry);
-
-                        TimeSpan timePassed = DateTime.Now - log.Time;
-                        var wait = (Delay * 1000) - (int)timePassed.TotalMilliseconds;
-
-                        Thread.Sleep(wait);
-
-                        Tio.SendCommand(log.ToFullCummand());
+                        Console.WriteLine("\nWaiting for file to grow...");
+                        commandSent = false;
                     }
-                }
-                else
-                {
-                    Thread.Sleep(50); // waits 1/20 a second before trying to read of to end of stream again
+
+                    Thread.Sleep(100);
+
+                    //if the file size has not changed, idle
+                    if (reader.BaseStream.Length == lastMaxOffset)
+                        continue;
+
+                    //seek to the last max offset
+                    reader.BaseStream.Seek(lastMaxOffset, SeekOrigin.Begin);
+
+                    //read out of the file until the EOF
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        log = new LogEntry(line);
+                      
+                        if (Delay > 0)
+                            IdleByLogTime(log);
+
+                        Tio.SendCommand(log.ToFullCommand());
+                    }
+
+                    commandSent = true;
+
+                    //update the last max offset
+                    lastMaxOffset = reader.BaseStream.Position;
                 }
             }
         }
 
-        public void CloneLog()
+        private void IdleByLogTime(LogEntry log)
         {
-            var tasks = new List<Task>();
-            LogEntry log;
-            string entry;
+            TimeSpan timePassed = DateTime.Now - log.Time;
+            var waitDecimal = Delay- Math.Floor(timePassed.TotalSeconds);
+            var wait = (int) Math.Floor(waitDecimal);
 
-            while ((entry = File.ReadLine()) != null)
+            if (wait >= 0)
             {
-                log = new LogEntry(entry);
-                Tio.SendCommand(log.ToFullCummand());
+                Console.WriteLine($"\nDelay time is {Delay} seconds. It will take more {wait} seconds for the command to be sent.\n");
+                Thread.Sleep(wait * 1000);
+            }
+            else
+            { 
+               Console.WriteLine("Delay was timeouted, inputed an entry manually or your server time is wrong.");
+                Console.WriteLine("Your command will be sent without any delay.");
             }
         }
     }

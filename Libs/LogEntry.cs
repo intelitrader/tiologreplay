@@ -23,15 +23,15 @@ namespace tioLogReplay.Libs
             if (entry.EndsWith(",n,"))
                 entry = entry.Remove(entry.Length - 3);
 
-	    string time;
+	    string dateTime;
             string keyInfo;
             string valueInfo;
             string key;
             string value;
 
-            // Sets some values to their respective properties // Returns key's value info.
+            // Set some values to their respective properties // Returns key's value info.
             // Tuple implementaion may slow tiologreplay, added for readability
-            (time, this.Command, this.Handle, keyInfo, key, valueInfo, value, _) = entry.Split(',', 7);
+            (dateTime, this.Command, this.Handle, keyInfo, key, valueInfo, value, _) = entry.Split(',', 7);
 
             if(Command == "create" || Command == "open")
             {
@@ -40,25 +40,27 @@ namespace tioLogReplay.Libs
             }
             else
             {
-                // Sets values for the final command
+                // Set values for the final command
                 this.Key = Deserialize(keyInfo);
                 this.Value = Deserialize(valueInfo);
 
                 if (this.Key != null)
-                    this.Data += $"\n{key}";
+                    this.Data += $"\r\n{key}";
                 if (this.Value != null)
-                    this.Data += $"\n{value}";
+                    this.Data += $"\r\n{value}";
             }
 
-            var a = new Options();
+            var arr = dateTime.Split(" ");
+            var date = arr[0];
+            var time = arr[1];
 
-            if (a.Delay > 0)
-                this.Time = DateTime.Parse(time.Substring(13));
+            this.Time = DateTime.Parse(time);
         }
 
         private string Deserialize(string info)
         {
-            var type = info[0]; // Takes type out info (format: "s12"; 's' for string. 'n' is null)
+            // Take type out info (format: "s12"; 's' for string. 'n' is null)
+            var type = info[0]; 
 
             if (type == 'n')
             {
@@ -66,9 +68,12 @@ namespace tioLogReplay.Libs
                 return null;
             }
 
-            var sizeL = info.Skip(1); // Gets only type's numbers
+            // Get only type's numbers
+            var sizeL = info.Skip(1); 
 
-            var size = int.Parse(string.Join("", sizeL)); // Turns stringfied numbers into actual numbers
+
+            // Turn stringfied numbers into actual numbers
+            var size = int.Parse(string.Join("", sizeL)); 
 
             var field = GetField();
 
@@ -94,7 +99,7 @@ namespace tioLogReplay.Libs
             }
         }
 
-        public string ToFullCummand()
+        public string ToFullCommand()
         {
             string fullCommand;
 
@@ -106,7 +111,7 @@ namespace tioLogReplay.Libs
             else
                 fullCommand = Command + ' ' + Handle + ' ' + Value + Data;
 
-            return fullCommand + "\n" + '\n'; //adds a new line to the command 
+            return fullCommand + "\r\n" + '\n'; //adds a new line to the command 
         }
     }
 }

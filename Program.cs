@@ -14,7 +14,7 @@ namespace tioLogReplay
     {
         static void Main(string[] args)
         {
-            const string path = @"C:\Users\danil\Desktop\tiodb\build\server\tio\Debug\logs\_20200527";
+            const string path = @"C:\Users\danil\Documents\Tio.Windows.tio-1.1.0.7959\a\logs\_20200611";
 
             if (!File.Exists(path))
                 throw new FileNotFoundException("Log not found");
@@ -29,13 +29,9 @@ namespace tioLogReplay
                 options.Follow,
                 options.Pause);
 
-            tioLogParser.CloneLog(); // Clones existent log
+            tioLogParser.Clone();
 
-            if (options.Delay == 0)
-               tioLogParser.WatchLog(); // Watches log
-            else
-              tioLogParser.WatchLogWithDelay();
+            tioLogParser.Replay();
         }
-
     }
 }
