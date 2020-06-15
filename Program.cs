@@ -14,24 +14,23 @@ namespace tioLogReplay
     {
         static void Main(string[] args)
         {
-            const string path = @"C:\Users\danil\Documents\Tio.Windows.tio-1.1.0.7959\a\logs\_20200611";
+            Parser.Default.ParseArguments<Options>(args)
+                  .WithParsed(o =>
+                  {
+                      if (!File.Exists(o.Path))
+                          throw new FileNotFoundException("Log not found");
 
-            if (!File.Exists(path))
-                throw new FileNotFoundException("Log not found");
+                      var tioLogParser = new TioLogParser(
+                          o.Address,
+                          o.Path,
+                          o.Speed,
+                          o.Delay,
+                          o.Follow,
+                          o.Pause);
 
-            var options = new Options();
-
-            options.Path = path; // Sets PATH as const for debbuging purposes
-
-            var tioLogParser = new TioLogParser(options.Path,
-                options.Speed,
-                options.Delay,
-                options.Follow,
-                options.Pause);
-
-            tioLogParser.Clone();
-
-            tioLogParser.Replay();
+                      tioLogParser.Clone();
+                      tioLogParser.Replay();
+                  });
         }
     }
 }

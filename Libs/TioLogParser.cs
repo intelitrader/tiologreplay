@@ -8,6 +8,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,12 +23,12 @@ namespace tioLogReplay.Libs
         public bool Follow { get; }
         public bool Pause { get; }
 
-        public TioLogParser(string path, int speed, int delay, bool follow, bool pause)
+        public TioLogParser(string address, string path, int speed, int delay, bool follow, bool pause)
         {
-            Tio = new TioConnection();
+            Tio = TioConnection.Connect(address);
             Path = path;
             Speed = speed;
-            Delay = 60;
+            Delay = delay;
             Follow = follow;
             Pause = pause;
         }
@@ -82,7 +83,7 @@ namespace tioLogReplay.Libs
                     while ((line = reader.ReadLine()) != null)
                     {
                         log = new LogEntry(line);
-                      
+
                         if (Delay > 0)
                             IdleByLogTime(log);
 
@@ -100,8 +101,8 @@ namespace tioLogReplay.Libs
         private void IdleByLogTime(LogEntry log)
         {
             TimeSpan timePassed = DateTime.Now - log.Time;
-            var waitDecimal = Delay- Math.Floor(timePassed.TotalSeconds);
-            var wait = (int) Math.Floor(waitDecimal);
+            var waitDecimal = Delay - Math.Floor(timePassed.TotalSeconds);
+            var wait = (int)Math.Floor(waitDecimal);
 
             if (wait >= 0)
             {
@@ -109,8 +110,8 @@ namespace tioLogReplay.Libs
                 Thread.Sleep(wait * 1000);
             }
             else
-            { 
-               Console.WriteLine("Delay was timeouted, inputed an entry manually or your server time is wrong.");
+            {
+                Console.WriteLine("Delay was timeouted, inputed an entry manually or your server time is wrong.");
                 Console.WriteLine("Your command will be sent without any delay.");
             }
         }

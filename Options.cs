@@ -1,4 +1,5 @@
 ﻿using CommandLine;
+using System.ComponentModel;
 
 namespace tioLogReplay
 {
@@ -6,8 +7,11 @@ namespace tioLogReplay
     {
         [Option('a', "address",
                 Required = false,
-                HelpText = "Defines the address for Tio replay server." +
-                           "It supports both ip_address and ip_address:port formats. Default is localhost:6025")]
+                HelpText = "Defines the address for Tio replay server.\n" +
+                           "It supports 'ip_address', 'ip_address:port' and 'port' (which will use localhost) formats.\n" +
+                           "Default is localhost:2605",
+                Default = "localhost:2605")
+            ]
 
         public string Address { get; set; }
 
