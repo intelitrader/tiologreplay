@@ -26,7 +26,7 @@ namespace tioLogReplay
         {
             int port = 0;
 
-            // if address has only digits, set socket address as localhost:digits
+            // if input address has only digits, set socket address as localhost:digits
             if (Regex.IsMatch(address, "^[0-9]*$"))
             {
                 port = int.Parse(address);
