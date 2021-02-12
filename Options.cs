@@ -34,7 +34,7 @@ namespace tioLogReplay
 
         [Option("follow",
             Required = false,
-            HelpText = "TODO",
+            HelpText = "Follow the file. Will wait for the file to grow to continue.",
             Default = false)]
         public bool Follow { get; set; }
 

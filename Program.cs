@@ -17,7 +17,7 @@ namespace tioLogReplay
             Parser.Default.ParseArguments<Options>(args)
                   .WithParsed(o =>
                   {
-                      if (!File.Exists(o.Path))
+                      if (o.Path != "stdin" && !File.Exists(o.Path))
                           throw new FileNotFoundException("Log not found");
 
                       var tioLogParser = new TioLogParser(
@@ -28,7 +28,6 @@ namespace tioLogReplay
                           o.Follow,
                           o.Pause);
 
-                      tioLogParser.Clone();
                       tioLogParser.Replay();
                   });
         }
